@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using NetCoreYouTube.Models;
 using System.Security.Claims;
 
@@ -67,6 +68,7 @@ namespace NetCoreYouTube.Controllers
 
         [HttpPost]
         [Route("eliminar")]
+        [Authorize]
         public dynamic eliminarCliente(Cliente cliente)
         {
             var identity = HttpContext.User.Identity as ClaimsIdentity;

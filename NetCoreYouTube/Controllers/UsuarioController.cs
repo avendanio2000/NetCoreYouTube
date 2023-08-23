@@ -69,7 +69,7 @@ namespace NetCoreYouTube.Controllers
             {
                 success = true,
                 message = "exito",
-                claimsV = claims,
+                //claimsV = claims,
                 result = new JwtSecurityTokenHandler().WriteToken(token)
             };
         }
