@@ -9,6 +9,7 @@ using Newtonsoft.Json;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
+using Microsoft.AspNetCore.Identity;
 
 namespace WhatsappAPI.Controllers
 {
@@ -80,5 +81,24 @@ namespace WhatsappAPI.Controllers
                 result = new JwtSecurityTokenHandler().WriteToken(token)
             };
         }
+
+        ////METODO PARA REGISTRAR UN NUEVO USUARIO DE LA WEB API
+
+        //[HttpPost("regitrar")]
+        //public async Task<ActionResult<RespuestaAutenticacionDto>> Registrar(CredencialesUsuario credencialesUsuario)
+        //{
+        //    var usuario = new IdentityUser { UserName = credencialesUsuario.UserName };
+
+        //    var resultado = await userManager.CreateAsync(usuario, credencialesUsuario.Password);
+
+        //    if (resultado.Succeeded)
+        //    {
+        //        return ConstruirToken(credencialesUsuario);
+        //    }
+        //    else
+        //    {
+        //        return BadRequest(resultado.Errors);
+        //    }
+        //}
     }
 }
