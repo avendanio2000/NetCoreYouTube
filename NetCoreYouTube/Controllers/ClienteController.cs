@@ -1,9 +1,9 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using NetCoreYouTube.Models;
+using WhatsappAPI.Models;
 using System.Security.Claims;
 
-namespace NetCoreYouTube.Controllers
+namespace WhatsappAPI.Controllers
 {
     [ApiController]
     [Route("cliente")]

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace NetCoreYouTube.DTOs
+namespace WhatsappAPI.DTOs
 {
     //var obj = new
     //{

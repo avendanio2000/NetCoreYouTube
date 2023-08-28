@@ -1,4 +1,4 @@
-﻿//using log4net;
+﻿using log4net;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
@@ -6,14 +6,14 @@ using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 using System.Net;
 using System.Net.Http.Headers;
-using NetCoreYouTube.DTOs;
-using NetCoreYouTube.Models;
+using WhatsappAPI.DTOs;
+using WhatsappAPI.Models;
 using System.Security.Claims;
 
 //using Newtonsoft.Json.Converters;
 //using Newtonsoft.Json.Serialization;
 
-namespace NetCoreYouTube.DTOs.Controllers
+namespace WhatsappAPI.DTOs.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
@@ -23,16 +23,16 @@ namespace NetCoreYouTube.DTOs.Controllers
         private readonly IConfiguration _configuration;
         private string _externalApiBaseUrl;
         private string _authorization;
-        //private readonly ILog _logger;
+        private readonly ILog _logger;
 
         UserManager<IdentityUser> userManager;
 
-        public WhatsappController(IConfiguration configuration /*, ILog logger]*/)
+        public WhatsappController(IConfiguration configuration, ILog logger)
         {
             _configuration = configuration;
             _externalApiBaseUrl = _configuration.GetValue<string>("WhatsappApiSettings:ExternalApiBaseUrl");
             _authorization = _configuration.GetValue<string>("WhatsappApiSettings:Authorization");
-            //_logger = logger;
+            _logger = logger;
         }
 
 
@@ -82,14 +82,14 @@ namespace NetCoreYouTube.DTOs.Controllers
                         {
                             // Si la respuesta de la API externa es exitosa, no necesitas retornar datos específicos
                             // Puedes simplemente devolver un resultado de acción vacío
-                            //_logger.Info("Mensaje enviado a Meta correctamente");
+                            _logger.Info("Mensaje enviado a Meta correctamente");
 
                             return NoContent();
                         }
                         else
                         {
                             // Si ocurre un error en la respuesta de la API externa, puedes retornar un resultado de error
-                            //_logger.Error($"Error al enviar el mensaje a Meta: StatusCode: {(int)response.StatusCode} - {response.ReasonPhrase}");
+                            _logger.Error($"Error al enviar el mensaje a Meta: StatusCode: {(int)response.StatusCode} - {response.ReasonPhrase}");
                             
                             return StatusCode((int)response.StatusCode);
                         }
@@ -104,7 +104,7 @@ namespace NetCoreYouTube.DTOs.Controllers
             }
             catch (Exception ex)
             {
-                //_logger.Error("Se produjo un error en SendMessage", ex);
+                _logger.Error("Se produjo un error en SendMessage", ex);
 
                 return StatusCode(500, $"Internal Server Error - {ex.Message}");
             }
@@ -116,13 +116,11 @@ namespace NetCoreYouTube.DTOs.Controllers
         //[Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
         public IActionResult Status()
         {
-            //_logger.Debug("mensaje de DEBUG");
-            //_logger.Error("mensaje de ERROR");
-
+            _logger.Debug("mensaje de DEBUG");
+            _logger.Error("mensaje de ERROR");
 
             return Ok("API autorizada");
         }
-
 
         //[HttpPost]
         //[Route("Status2")]

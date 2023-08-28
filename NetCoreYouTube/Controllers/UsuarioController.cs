@@ -1,25 +1,28 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.IdentityModel.Tokens;
-using NetCoreYouTube.Models;
+﻿using log4net;
 using Microsoft.AspNetCore.Mvc;
-using NetCoreYouTube.Models;
+using Microsoft.IdentityModel.Tokens;
+using WhatsappAPI.Models;
+using Microsoft.AspNetCore.Mvc;
+using WhatsappAPI.Models;
 using Newtonsoft.Json;
 
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 
-namespace NetCoreYouTube.Controllers
+namespace WhatsappAPI.Controllers
 {
     [ApiController]
     [Route("usuario")]
     public class UsuarioController
     {
         private IConfiguration _configuration;
+        private readonly ILog _logger;
 
-        public UsuarioController(IConfiguration configuration)
+        public UsuarioController(IConfiguration configuration, ILog logger)
         {
             _configuration = configuration;
+            _logger = logger;
         }
 
         [HttpPost]
@@ -35,6 +38,8 @@ namespace NetCoreYouTube.Controllers
 
             if (usuario == null)
             {
+                _logger.Info("Error en inicio de sesion, credenciales incorrectas");
+
                 return new
                 {
                     success = false,
@@ -64,6 +69,8 @@ namespace NetCoreYouTube.Controllers
                 expires: DateTime.Now.AddHours(6),
                 signingCredentials: signIn
                 );
+
+            _logger.Info("Inicio de sesion correcto");
 
             return new
             {

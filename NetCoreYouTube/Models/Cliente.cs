@@ -1,4 +1,4 @@
-﻿namespace NetCoreYouTube.Models
+﻿namespace WhatsappAPI.Models
 {
     public class Cliente
     {

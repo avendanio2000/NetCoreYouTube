@@ -1,7 +1,7 @@
 ﻿using System.Reflection.Metadata.Ecma335;
 using System.Security.Claims;
 
-namespace NetCoreYouTube.Models
+namespace WhatsappAPI.Models
 {
     public class Jwt
     {
