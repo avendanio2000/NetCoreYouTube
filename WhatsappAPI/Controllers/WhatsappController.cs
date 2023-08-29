@@ -50,13 +50,22 @@ namespace WhatsappAPI.DTOs.Controllers
 
             var rToken = Jwt.validarToken(identity);
 
-            if (!rToken.success) return rToken;
+            if (!rToken.success)
+            {
+                _logger.Info(rToken.message);
+
+                return rToken;
+            }
 
             Usuario usuario = rToken.result;
 
             if (usuario.rol != "administrador")
             {
-                return StatusCode(400, "no tienes permisos para eliminar clientes");
+                string msg = "No tienes permisos para eliminar clientes";
+
+                _logger.Info(msg);
+
+                return StatusCode(400, msg);
             }
 
             string token = Request.Headers.Where(x => x.Key == "Authorization").FirstOrDefault().Value;

@@ -17,7 +17,7 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddSwaggerGen(c =>
 {
     //Titulo (Diseño)
-    c.SwaggerDoc("v1", new OpenApiInfo { Title = "Software Lion", Version = "v1" });
+    c.SwaggerDoc("v1", new OpenApiInfo { Title = "Whatsapp API", Version = "v1" });
 
     //Boton Autorize (Swagger)
     c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme

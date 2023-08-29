@@ -5,7 +5,6 @@ using WhatsappAPI.Models;
 using Microsoft.AspNetCore.Mvc;
 using WhatsappAPI.Models;
 using Newtonsoft.Json;
-
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
@@ -19,8 +18,9 @@ namespace WhatsappAPI.Controllers
     {
         private IConfiguration _configuration;
         private readonly ILog _logger;
+        private readonly Microsoft.AspNetCore.Identity.UserManager<IdentityUser> userManager;
 
-        public UsuarioController(IConfiguration configuration, ILog logger)
+        public UsuarioController(IConfiguration configuration, ILog logger, UserManager<IdentityUser> userManager)
         {
             _configuration = configuration;
             _logger = logger;
@@ -82,23 +82,59 @@ namespace WhatsappAPI.Controllers
             };
         }
 
-        ////METODO PARA REGISTRAR UN NUEVO USUARIO DE LA WEB API
+        //METODO PARA REGISTRAR UN NUEVO USUARIO DE LA WEB API
 
-        //[HttpPost("regitrar")]
-        //public async Task<ActionResult<RespuestaAutenticacionDto>> Registrar(CredencialesUsuario credencialesUsuario)
-        //{
-        //    var usuario = new IdentityUser { UserName = credencialesUsuario.UserName };
+        [HttpPost]
+        [Route("registrar")]
+        public async Task<dynamic> RegistrarAsync(CredencialesUsuario credencialesUsuario)
+        {
+            //crea y persiste el nuevo usuario en las tablas de identity
+            var usuarioIdentity = new IdentityUser { UserName = credencialesUsuario.UserName };
+            var resultado = await userManager.CreateAsync(usuarioIdentity, credencialesUsuario.Password);
 
-        //    var resultado = await userManager.CreateAsync(usuario, credencialesUsuario.Password);
+            //busca y obtiene el usuario creado para construir su token
+            Usuario usuario = Usuario.DB().Where(x => x.usuario == credencialesUsuario.UserName && x.password == credencialesUsuario.Password).FirstOrDefault();
 
-        //    if (resultado.Succeeded)
-        //    {
-        //        return ConstruirToken(credencialesUsuario);
-        //    }
-        //    else
-        //    {
-        //        return BadRequest(resultado.Errors);
-        //    }
-        //}
+            if (resultado.Succeeded)
+            {
+                return ConstruirToken(usuario);
+            }
+            else
+            {
+                return new
+                {
+                    success = false,
+                    message = "Error al registrar usuario",
+                    result = ""
+                };
+            }
+        }
+
+        private JwtSecurityToken ConstruirToken(Usuario usuario)
+        {
+            var jwt = _configuration.GetSection("Jwt").Get<Jwt>();
+
+            var claims = new[]
+            {
+                new Claim(JwtRegisteredClaimNames.Sub, jwt.Subject),
+                new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
+                new Claim(JwtRegisteredClaimNames.Iat,DateTime.UtcNow.ToString()),
+                new Claim("Id", usuario.idUsuario),
+                new Claim("usuario", usuario.usuario)
+            };
+
+            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwt.Key));
+            var signIn = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+
+            var token = new JwtSecurityToken(
+                jwt.Issuer,
+                jwt.Audience,
+                claims,
+                expires: DateTime.Now.AddHours(6),
+                signingCredentials: signIn
+                );
+
+            return token;
+        }
     }
 }

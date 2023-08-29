@@ -9,7 +9,7 @@
     }
   },
   "profiles": {
-    "NetCoreYouTube": {
+    "WhatsappAPI2": {
       "commandName": "Project",
       "dotnetRunMessages": true,
       "launchBrowser": true,
