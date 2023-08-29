@@ -44,8 +44,6 @@ namespace WhatsappAPI.Models
                     result = ""
                 };
             }
-
-            return null;
         }       
 
     }
