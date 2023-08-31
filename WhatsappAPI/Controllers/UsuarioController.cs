@@ -66,8 +66,8 @@ namespace WhatsappAPI.Controllers
             var token = new JwtSecurityToken(
                 jwt.Issuer,
                 jwt.Audience,
-                //claims,
-                //expires: DateTime.Now.AddHours(6),
+                claims,
+                expires: DateTime.Now.AddHours(6),
                 signingCredentials: signIn
                 );
 
