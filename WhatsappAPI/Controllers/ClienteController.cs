@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using WhatsappAPI.Models;
 using System.Security.Claims;
+using Microsoft.AspNetCore.Identity;
 
 namespace WhatsappAPI.Controllers
 {
@@ -9,6 +10,13 @@ namespace WhatsappAPI.Controllers
     [Route("cliente")]
     public class ClienteController : ControllerBase
     {
+        private readonly UserManager<IdentityUser> _userManager;
+
+        public ClienteController(UserManager<IdentityUser> userManager)
+        {
+            _userManager = userManager;
+        }
+
         [HttpGet]
         [Route("listar")]
         public dynamic listarCliente()
@@ -68,16 +76,16 @@ namespace WhatsappAPI.Controllers
 
         [HttpPost]
         [Route("eliminar")]
-        [Authorize]
+        //[Authorize]
         public dynamic eliminarCliente(Cliente cliente)
         {
             var identity = HttpContext.User.Identity as ClaimsIdentity;
             
-            var rToken = Jwt.validarToken(identity);
+            var rToken = Jwt.validarTokenAsync(identity, _userManager);
 
-            if (!rToken.success) return rToken;
+            if (!rToken.Result.IsCompletedSuccessfully) return rToken;
 
-            Usuario usuario = rToken.result;
+            Usuario usuario = rToken.Result;
 
             if(usuario.rol != "administrador")
             {

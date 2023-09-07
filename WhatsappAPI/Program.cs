@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using System.Text;
-
+using Microsoft.Extensions.DependencyInjection;
 
 var builder = WebApplication.CreateBuilder(args);
 var configuration = builder.Configuration;
@@ -18,6 +18,16 @@ builder.Services.AddControllers();
 
 builder.Services.AddDbContext<ApplicationDBContext>(options =>
     options.UseSqlServer(configuration.GetConnectionString("DefaultConnection")));
+
+//MODIFICACION AddIdentity<IdentityUser, IdentityRole>() x AddIdentityCore<IdentityUser>()
+builder.Services.AddIdentityCore<IdentityUser>()
+        .AddEntityFrameworkStores<ApplicationDBContext>()
+        .AddDefaultTokenProviders();
+
+builder.Services.AddIdentity<IdentityUser, IdentityRole>()
+    .AddEntityFrameworkStores<ApplicationDBContext>()
+    .AddDefaultTokenProviders()
+    .AddRoles<IdentityRole>(); // Agrega esta línea para habilitar la gestión de roles
 
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
@@ -69,10 +79,6 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJw
 });
 
 builder.Services.AddLog4net();
-
-builder.Services.AddIdentity<IdentityUser, IdentityRole>()
-        .AddEntityFrameworkStores<ApplicationDBContext>()
-        .AddDefaultTokenProviders();
 
 var app = builder.Build();
 

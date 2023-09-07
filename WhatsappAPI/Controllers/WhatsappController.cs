@@ -24,15 +24,17 @@ namespace WhatsappAPI.DTOs.Controllers
         private string _externalApiBaseUrl;
         private string _authorization;
         private readonly ILog _logger;
+        private readonly UserManager<IdentityUser> _userManager;
 
         UserManager<IdentityUser> userManager;
 
-        public WhatsappController(IConfiguration configuration, ILog logger)
+        public WhatsappController(IConfiguration configuration, ILog logger, UserManager<IdentityUser> userManager)
         {
             _configuration = configuration;
             _externalApiBaseUrl = _configuration.GetValue<string>("WhatsappApiSettings:ExternalApiBaseUrl");
             _authorization = _configuration.GetValue<string>("WhatsappApiSettings:Authorization");
             _logger = logger;
+            _userManager = userManager;
         }
 
 
@@ -52,16 +54,16 @@ namespace WhatsappAPI.DTOs.Controllers
         {
             var identity = HttpContext.User.Identity as ClaimsIdentity;
 
-            var rToken = Jwt.validarToken(identity);
+            var rToken = Jwt.validarTokenAsync(identity, _userManager);
 
-            if (!rToken.success)
+            if (!rToken.IsCompletedSuccessfully)
             {
-                _logger.Info(rToken.message);
+                _logger.Info(rToken.Result.message);
 
-                return rToken;
+                return (IActionResult)rToken;
             }
 
-            Usuario usuario = rToken.result;
+            Usuario usuario = rToken.Result;
 
             if (usuario.rol != "administrador")
             {
