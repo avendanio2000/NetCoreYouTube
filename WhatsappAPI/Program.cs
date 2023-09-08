@@ -9,6 +9,7 @@ using Microsoft.OpenApi.Models;
 using System.Text;
 using Microsoft.Extensions.DependencyInjection;
 
+
 var builder = WebApplication.CreateBuilder(args);
 var configuration = builder.Configuration;
 
@@ -19,18 +20,20 @@ builder.Services.AddControllers();
 builder.Services.AddDbContext<ApplicationDBContext>(options =>
     options.UseSqlServer(configuration.GetConnectionString("DefaultConnection")));
 
+//NO FUNCIONA CON ROLES
+//builder.Services.AddIdentity<IdentityUser, IdentityRole>()
+//    .AddEntityFrameworkStores<ApplicationDBContext>()
+//    .AddDefaultTokenProviders()
+//    .AddRoles<IdentityRole>(); // Agrega esta línea para habilitar la gestión de roles
+
 //MODIFICACION AddIdentity<IdentityUser, IdentityRole>() x AddIdentityCore<IdentityUser>()
 builder.Services.AddIdentityCore<IdentityUser>()
         .AddEntityFrameworkStores<ApplicationDBContext>()
         .AddDefaultTokenProviders();
 
-builder.Services.AddIdentity<IdentityUser, IdentityRole>()
-    .AddEntityFrameworkStores<ApplicationDBContext>()
-    .AddDefaultTokenProviders()
-    .AddRoles<IdentityRole>(); // Agrega esta línea para habilitar la gestión de roles
-
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
+
 //builder.Services.AddSwaggerGen();
 
 builder.Services.AddSwaggerGen(c =>
@@ -78,6 +81,15 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJw
     };
 });
 
+//builder.Services.AddAuthorization(options =>
+//{
+//    options.AddPolicy("AdminPolicy", policy =>
+//    {
+//        policy.RequireRole("administrador");
+//    });
+//});
+
+
 builder.Services.AddLog4net();
 
 var app = builder.Build();
@@ -91,6 +103,12 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 app.UseRouting();
+
+//app.MapControllerRoute(
+//    name: "default",
+//    pattern: "{controller=Home}/{action=Index}/{id?}"
+//  );
+
 app.UseAuthentication();
 app.UseAuthorization();
 

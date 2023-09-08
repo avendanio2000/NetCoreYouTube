@@ -39,10 +39,10 @@ namespace WhatsappAPI.Models
                 usuario.usuario = usuario_t.UserName;
                 usuario.rol = "";
                 
-                if (usuario_t != null)
-                {
-                    var roles = await userManager.GetRolesAsync(usuario_t); //buscar rol en la base manualmente
-                }                
+                //if (usuario_t != null)
+                //{
+                //    var roles = await userManager.GetRolesAsync(usuario_t); //buscar rol en la base manualmente
+                //}                
 
                 //busca usuario desde lista temporal en memoria, mal
 

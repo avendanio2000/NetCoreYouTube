@@ -2,16 +2,13 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
 using WhatsappAPI.Models;
-using Microsoft.AspNetCore.Mvc;
-using WhatsappAPI.Models;
 using Newtonsoft.Json;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Authorization;
 using Newtonsoft.Json.Linq;
-using System.Security.Principal;
-using Microsoft.EntityFrameworkCore.ChangeTracking.Internal;
 
 namespace WhatsappAPI.Controllers
 {
@@ -39,14 +36,8 @@ namespace WhatsappAPI.Controllers
             string user = data.usuario.ToString();
             string password = data.password.ToString();
 
-            //error al buscar por id en lista en memoria
-            //Usuario usuario = Usuario.DB().Where(x => x.usuario == user && x.password == password).FirstOrDefault();
-
-
             //busca y obtiene el usuario que solicita ingreso para construir y entregar su token adjunto
-
             var usuario_t = await _userManager.FindByNameAsync(user);
-            //var usuario_t = await _userManager.FindByLoginAsync(user, password);
 
             if (usuario_t != null)
             {
@@ -55,38 +46,32 @@ namespace WhatsappAPI.Controllers
                 usuario.idUsuario = usuario_t.Id;
                 usuario.usuario = usuario_t.UserName;
 
-                var jwt = _configuration.GetSection("Jwt").Get<Jwt>();
+                var token = ConstruirToken(usuario);
 
-                var claims = new[]
+                if (token != null)
                 {
-                new Claim(JwtRegisteredClaimNames.Sub, jwt.Subject),
-                new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
-                new Claim(JwtRegisteredClaimNames.Iat,DateTime.UtcNow.ToString()),
-                new Claim("Id", usuario.idUsuario),
-                new Claim("usuario", usuario.usuario)
-            };
+                    _logger.Info("Inicio de sesion correcto");
 
-                var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwt.Key));
-                var signIn = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
-
-                var token = new JwtSecurityToken(
-                    jwt.Issuer,
-                    jwt.Audience,
-                    claims,
-                    expires: DateTime.Now.AddHours(6),
-                    signingCredentials: signIn
-                    );
-
-                _logger.Info("Inicio de sesion correcto");
-
-                return new
+                    return new
+                    {
+                        success = true,
+                        message = "Inicio de sesion correcto",
+                        //claimsV = claims,
+                        result = new JwtSecurityTokenHandler().WriteToken(token)
+                    };
+                }
+                else
                 {
-                    success = true,
-                    message = "exito",
-                    //claimsV = claims,
-                    result = new JwtSecurityTokenHandler().WriteToken(token)
-                };
+                    _logger.Info("Error al iniciar sesion, no se pudo generar el token");
 
+                    return new
+                    {
+                        success = true,
+                        message = "Error al iniciar sesion",
+                        //claimsV = claims,
+                        result = new JwtSecurityTokenHandler().WriteToken(token)
+                    };
+                }
             }
             else
             {
@@ -105,7 +90,7 @@ namespace WhatsappAPI.Controllers
 
         [HttpPost]
         [Route("registrar")]
-        //[Authorize]
+        [Authorize]
         public async Task<dynamic> RegistrarAsync(CredencialesUsuario credencialesUsuario)
         {
             //crea y persiste el nuevo usuario en las tablas de identity
@@ -114,7 +99,7 @@ namespace WhatsappAPI.Controllers
 
             if (resultado.Succeeded)
             {
-                //Usuario usuario = Usuario.DB().Where(x => x.usuario == credencialesUsuario.UserName && x.password == credencialesUsuario.Password).FirstOrDefault();
+                _logger.Info("Usuario registrado correctamente");
 
                 var usuario_t = _userManager.FindByNameAsync(credencialesUsuario.UserName);
 
@@ -126,15 +111,30 @@ namespace WhatsappAPI.Controllers
 
                 var token = ConstruirToken(usuario);
 
-                _logger.Info("Inicio de sesion correcto");
-
-                return new
+                if (token != null)
                 {
-                    success = true,
-                    message = "exito",
-                    //claimsV = claims,
-                    result = new JwtSecurityTokenHandler().WriteToken(token)
-                };
+                    _logger.Info("Inicio de sesion correcto");
+
+                    return new
+                    {
+                        success = true,
+                        message = "Usuario registrado correctamente",
+                        //claimsV = claims,
+                        result = new JwtSecurityTokenHandler().WriteToken(token)
+                    };
+                }
+                else
+                {
+                    _logger.Info("Error al registrar usuario, no se pudo encontrar el usuario registrado");
+
+                    return new
+                    {
+                        success = true,
+                        message = "Error al iniciar sesion",
+                        //claimsV = claims,
+                        result = new JwtSecurityTokenHandler().WriteToken(token)
+                    };
+                }
             }
             else
             {
@@ -142,6 +142,41 @@ namespace WhatsappAPI.Controllers
                 {
                     success = false,
                     message = "Error al registrar usuario " + resultado.ToString(),
+                    result = ""
+                };
+            }
+        }
+
+        //METODO PARA ELIMINAR UN USUARIO DE LA WEB API
+
+        [HttpPost]
+        [Route("eliminar")]
+        [Authorize]
+        public async Task<dynamic> EliminarAsync(CredencialesUsuario credencialesUsuario)
+        {
+            //elimina un usuario en las tablas de identity
+
+            var usuario_t = _userManager.FindByNameAsync(credencialesUsuario.UserName);
+
+            var resultado = await _userManager.DeleteAsync(usuario_t.Result);
+
+            if (resultado.Succeeded)
+            {
+                _logger.Info("Usuario eliminado correctamente");
+
+                return new
+                {
+                    success = true,
+                    message = "Usuario eliminado correctamente",
+                    result = ""
+                };
+            }
+            else
+            {
+                return new
+                {
+                    success = false,
+                    message = "Error al eliminar usuario " + resultado.ToString(),
                     result = ""
                 };
             }
@@ -157,7 +192,8 @@ namespace WhatsappAPI.Controllers
                 new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
                 new Claim(JwtRegisteredClaimNames.Iat,DateTime.UtcNow.ToString()),
                 new Claim("Id", usuario.idUsuario),
-                new Claim("usuario", usuario.usuario)
+                new Claim("usuario", usuario.usuario),
+                new Claim(ClaimTypes.Role, "administrador")
             };
 
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwt.Key));

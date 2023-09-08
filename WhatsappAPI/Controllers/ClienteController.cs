@@ -76,26 +76,27 @@ namespace WhatsappAPI.Controllers
 
         [HttpPost]
         [Route("eliminar")]
-        //[Authorize]
+        [Authorize]
+        //[Authorize(Policy = "AdminPolicy")]
         public dynamic eliminarCliente(Cliente cliente)
         {
             var identity = HttpContext.User.Identity as ClaimsIdentity;
-            
+
             var rToken = Jwt.validarTokenAsync(identity, _userManager);
 
-            if (!rToken.Result.IsCompletedSuccessfully) return rToken;
+            if (!rToken.Result.success) return rToken;
 
-            Usuario usuario = rToken.Result;
+            Usuario usuario = rToken.Result.result;
 
-            if(usuario.rol != "administrador")
-            {
-                return new
-                {
-                    success = false,
-                    message = "no tienes permisos para eliminar clientes",
-                    result = ""
-                };
-            }
+            //if(usuario.rol != "administrador")
+            //{
+            //    return new
+            //    {
+            //        success = false,
+            //        message = "no tienes permisos para eliminar clientes",
+            //        result = ""
+            //    };
+            //}
 
             string token = Request.Headers.Where(x => x.Key == "Authorization").FirstOrDefault().Value;
 

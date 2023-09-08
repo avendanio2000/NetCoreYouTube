@@ -56,7 +56,7 @@ namespace WhatsappAPI.DTOs.Controllers
 
             var rToken = Jwt.validarTokenAsync(identity, _userManager);
 
-            if (!rToken.IsCompletedSuccessfully)
+            if (!rToken.Result.success)
             {
                 _logger.Info(rToken.Result.message);
 
