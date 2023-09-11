@@ -39,7 +39,10 @@ namespace WhatsappAPI.Controllers
             //busca y obtiene el usuario que solicita ingreso para construir y entregar su token adjunto
             var usuario_t = await _userManager.FindByNameAsync(user);
 
-            if (usuario_t != null)
+            // Verifica si la contraseña actual es correcta
+            var contrasenaCorrecta = await _userManager.CheckPasswordAsync(usuario_t, password);
+
+            if (usuario_t != null && contrasenaCorrecta)
             {
                 Usuario usuario = new Usuario();
 
@@ -177,6 +180,41 @@ namespace WhatsappAPI.Controllers
                 {
                     success = false,
                     message = "Error al eliminar usuario " + resultado.ToString(),
+                    result = ""
+                };
+            }
+        }
+
+        //METODO PARA MODIFICAR LA CONTRASEÑA DE UN USUARIO DE LA WEB API
+
+        [HttpPost]
+        [Route("cambiarPass")]
+        [Authorize]
+        public async Task<dynamic> CambiarPassAsync(CredencialesUsuario credencialesUsuario)
+        {
+            //modifica la contraseña de un usuario en las tablas de identity
+
+            var usuario_t = _userManager.FindByNameAsync(credencialesUsuario.UserName);
+
+            var resultado = await _userManager.ChangePasswordAsync(usuario_t.Result, credencialesUsuario.Password, credencialesUsuario.NewPassword);
+
+            if (resultado.Succeeded)
+            {
+                _logger.Info("Contraseña cambiada correctamente");
+
+                return new
+                {
+                    success = true,
+                    message = "Contraseña cambiada correctamente",
+                    result = ""
+                };
+            }
+            else
+            {
+                return new
+                {
+                    success = false,
+                    message = "Error al cambiar la contraseña " + resultado.ToString(),
                     result = ""
                 };
             }

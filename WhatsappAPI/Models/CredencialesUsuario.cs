@@ -12,5 +12,7 @@ namespace WhatsappAPI.Models
         public String UserName { get; set; }
         [Required]
         public String Password { get; set; }
+
+        public String NewPassword { get; set; }
     }
 }
