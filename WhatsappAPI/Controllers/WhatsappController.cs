@@ -9,6 +9,7 @@ using System.Net.Http.Headers;
 using WhatsappAPI.DTOs;
 using WhatsappAPI.Models;
 using System.Security.Claims;
+using Newtonsoft.Json.Linq;
 
 //using Newtonsoft.Json.Converters;
 //using Newtonsoft.Json.Serialization;
@@ -60,19 +61,28 @@ namespace WhatsappAPI.DTOs.Controllers
             {
                 _logger.Info(rToken.Result.message);
 
-                return (IActionResult)rToken;
+                return StatusCode(500, rToken.Result.message);
             }
-
-            Usuario usuario = rToken.Result;
-
-            if (usuario.rol != "administrador")
+            else
             {
-                string msg = "No tienes permisos para eliminar clientes";
+                var result = SenMessageFacebbokAsync(whatsappDataDto);
 
-                _logger.Info(msg);
+                _logger.Info(rToken.Result.message);
 
-                return StatusCode(400, msg);
+                return StatusCode(200, rToken.Result.message);
             }
+        }
+
+        private async Task<IActionResult> SenMessageFacebbokAsync(WhatsappDataDto whatsappDataDto)
+        {
+            //if (usuario.rol != "administrador")
+            //{
+            //    string msg = "No tienes permisos para enviar mensajes";
+
+            //    _logger.Info(msg);
+
+            //    return StatusCode(400, msg);
+            //}
 
             string token = Request.Headers.Where(x => x.Key == "Authorization").FirstOrDefault().Value;
             try
@@ -105,7 +115,7 @@ namespace WhatsappAPI.DTOs.Controllers
                         {
                             // Si ocurre un error en la respuesta de la API externa, puedes retornar un resultado de error
                             _logger.Error($"Error al enviar el mensaje a Meta: StatusCode: {(int)response.StatusCode} - {response.ReasonPhrase}");
-                            
+
                             return StatusCode((int)response.StatusCode);
                         }
 
@@ -124,61 +134,5 @@ namespace WhatsappAPI.DTOs.Controllers
                 return StatusCode(500, $"Internal Server Error - {ex.Message}");
             }
         }
-
-        //[Authorize]
-        [HttpPost]
-        [Route("Status")]
-        //[Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
-        public IActionResult Status()
-        {
-            _logger.Debug("mensaje de DEBUG");
-            _logger.Error("mensaje de ERROR");
-
-            return Ok("API autorizada");
-        }
-
-        //[HttpPost]
-        //[Route("Status2")]
-        //[Authorize]
-        //public IActionResult Status2()
-        //{
-        //    return Ok("API autorizada. Status 2");
-        //}
-
-        #region EJEMPLOS 
-
-        // En este ejemplo, se utiliza Task<IActionResult> como tipo de retorno, ya que la API externa se invoca 
-        // asincrónicamente y no se requiere un tipo de contenido específico para la respuesta del controlador.
-        // Si la respuesta de la API externa es exitosa, se retorna NoContent() para indicar que no hay datos 
-        // adicionales que devolver. Si la respuesta de la API externa es un error, se utiliza StatusCode() para 
-        // retornar un resultado de error con el mismo código de estado que se recibió de la API externa.
-        // Recuerda que esto es solo un ejemplo y puedes adaptarlo según tus necesidades y el manejo específico que 
-        // desees realizar al invocar a la API externa desde tu controlador.
-
-        //public async Task<IActionResult> InvokeExternalApi()
-        //{
-        //    // Lógica para invocar a la API externa
-
-        //    // Realizar la llamada a la API externa
-        //    var response = await httpClient.GetAsync("https://api.externa.com/resource");
-
-        //    // Verificar el código de estado de la respuesta
-        //    if (response.IsSuccessStatusCode)
-        //    {
-        //        // Si la respuesta de la API externa es exitosa, no necesitas retornar datos específicos
-        //        // Puedes simplemente devolver un resultado de acción vacío
-        //        return NoContent();
-        //    }
-        //    else
-        //    {
-        //        // Si ocurre un error en la respuesta de la API externa, puedes retornar un resultado de error
-        //        return StatusCode((int)response.StatusCode);
-        //    }
-        //}
-
-
-        #endregion
-
-
     }
 }
